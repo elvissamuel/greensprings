@@ -1,0 +1,157 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  password  String
+  name      String
+  role      String   @default("admin")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Campus {
+  id           String        @id @default(cuid())
+  name         String        @unique
+  location     String?
+  fee          Int           @default(50000) // Application fee in kobo/smallest unit
+  active       Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  applications Application[]
+}
+
+model AcademicYear {
+  id           String        @id @default(cuid())
+  year         String        @unique // e.g., "2024/2025"
+  startDate    DateTime
+  endDate      DateTime
+  active       Boolean       @default(true)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  applications Application[]
+}
+
+model Application {
+  id             String        @id @default(cuid())
+  status         String        @default("pending") // pending, submitted, under_review, accepted, rejected
+  applyingAs     String // new_student, returning_student, transfer_student
+  campusId       String
+  campus         Campus        @relation(fields: [campusId], references: [id])
+  academicYearId String
+  academicYear   AcademicYear  @relation(fields: [academicYearId], references: [id])
+  submittedAt    DateTime?
+  deletedAt      DateTime?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+  applicant      Applicant?
+  parents        Parent[]
+  schoolRecords  SchoolRecord[]
+  documents      Document[]
+  payment        Payment?
+
+  @@index([campusId])
+  @@index([academicYearId])
+  @@index([status])
+}
+
+model Applicant {
+  id              String      @id @default(cuid())
+  applicationId   String      @unique
+  application     Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  firstName       String
+  middleName      String?
+  lastName        String
+  dateOfBirth     DateTime
+  gender          String // male, female
+  nationality     String
+  address         String
+  homeLanguage    String
+  firstLanguage   String
+  ethnicity       String?
+  yearAppliedFor  String // e.g., "Year 1", "Year 7"
+  stateOfOrigin   String
+  lga             String // Local Government Area
+  requireBus      Boolean     @default(false)
+  religion        String?
+  placeOfBirth    String
+  livesWith       String // both_parents, mother, father, guardian, other
+  livesWithOther  String? // if livesWith is "other"
+  createdAt       DateTime    @default(now())
+  updatedAt       DateTime    @updatedAt
+}
+
+model Parent {
+  id                String      @id @default(cuid())
+  applicationId     String
+  application       Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  type              String // FATHER, MOTHER, GUARDIAN, OTHER
+  detailsNotAvailable Boolean   @default(false)
+  title             String? // Mr, Mrs, Dr, etc
+  firstName         String?
+  middleName        String?
+  lastName          String?
+  nationality       String?
+  address           String?
+  email             String?
+  mobilePhone       String?
+  workPhone         String?
+  occupation        String?
+  companyName       String?
+  companyAddress    String?
+  nin               String? // National Identification Number
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  @@index([applicationId])
+}
+
+model SchoolRecord {
+  id            String      @id @default(cuid())
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  schoolName    String
+  yearAttended  String // e.g., "2020-2022"
+  cityCountry   String
+  classLevel    String // e.g., "Year 5", "Grade 3"
+  createdAt     DateTime    @default(now())
+  updatedAt     DateTime    @updatedAt
+
+  @@index([applicationId])
+}
+
+model Document {
+  id            String      @id @default(cuid())
+  applicationId String
+  application   Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  type          String // BIRTH_CERTIFICATE, CHARACTER_TESTIMONIAL, ACADEMIC_REPORT_1, ACADEMIC_REPORT_2, MEDICAL_HISTORY, PASSPORT_PHOTO, PSYCHOLOGICAL_ASSESSMENT
+  filename      String
+  path          String
+  mimeType      String
+  size          Int // in bytes
+  uploadedAt    DateTime    @default(now())
+
+  @@index([applicationId])
+  @@index([type])
+}
+
+model Payment {
+  id                String      @id @default(cuid())
+  applicationId     String      @unique
+  application       Application @relation(fields: [applicationId], references: [id], onDelete: Cascade)
+  amount            Int // in kobo/smallest currency unit
+  currency          String      @default("NGN")
+  status            String      @default("pending") // pending, processing, completed, failed
+  paymentMethod     String? // visa, mastercard, verve
+  providerReference String? // Stripe payment intent ID or transaction reference
+  paidAt            DateTime?
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+}

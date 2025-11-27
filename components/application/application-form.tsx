@@ -1,0 +1,446 @@
+"use client"
+
+import { useState, useEffect, useCallback } from "react"
+import { useForm, FormProvider } from "react-hook-form"
+import { usePathname } from "next/navigation"
+import { ApplicationInfoStep } from "./steps/application-info-step"
+import { StudentDetailsStep } from "./steps/student-details-step"
+import { ChildLivesWithStep } from "./steps/child-lives-with-step"
+import { SchoolsAttendedStep } from "./steps/schools-attended-step"
+import { ParentsGuardianStep } from "./steps/parents-guardian-step"
+import { MedicalEmergencyStep } from "./steps/medical-emergency-step"
+import { AdditionalDetailsStep } from "./steps/additional-details-step"
+import { DocumentUploadStep } from "./steps/document-upload-step"
+import { DeclarationStep } from "./steps/declaration-step"
+import { ReviewStep } from "./steps/review-step"
+import { ProgressIndicator } from "./progress-indicator"
+import { SubmissionModal } from "./submission-modal"
+import { ResumeApplicationModal } from "./resume-modal"
+import { useFormPersistence } from "@/hooks/use-form-persistence"
+
+type Campus = {
+  id: string
+  name: string
+  fee: number
+}
+
+type AcademicYear = {
+  id: string
+  year: string
+}
+
+type Props = {
+  campuses: Campus[]
+  academicYears: AcademicYear[]
+}
+
+const STEPS = [
+  "Application Info",
+  "Student Details",
+  "Child Lives With",
+  "Schools Attended",
+  "Parents/Guardian",
+  "Medical & Emergency",
+  "Additional Details",
+  "Document Uploads",
+  "Declaration",
+  "Review & Submit",
+]
+
+export default function ApplicationForm({ campuses, academicYears }: Props) {
+  const [currentStep, setCurrentStep] = useState(0)
+  const [uploadedDocuments, setUploadedDocuments] = useState<Record<string, File>>({})
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [showModal, setShowModal] = useState(false)
+  const [showResumeModal, setShowResumeModal] = useState(false)
+  const [savedApplicationData, setSavedApplicationData] = useState<{
+    savedAt: string
+    currentStep: number
+    documentNames: string[]
+  } | null>(null)
+  const [submissionData, setSubmissionData] = useState<{ applicationId: string; applicationFee: number } | null>(null)
+
+  const methods = useForm({
+    mode: "onBlur",
+    defaultValues: {
+      campusId: "",
+      academicYearId: "",
+      applyingAs: "new_student" as const,
+      student: {
+        firstName: "",
+        middleName: "",
+        lastName: "",
+        dateOfBirth: "",
+        gender: "male" as const,
+        nationality: "Nigerian",
+        address: "",
+        homeLanguage: "",
+        firstLanguage: "",
+        ethnicity: "",
+        yearAppliedFor: "",
+        stateOfOrigin: "",
+        lga: "",
+        requireBus: false,
+        religion: "",
+        placeOfBirth: "",
+        livesWith: "both_parents" as const,
+        livesWithOther: "",
+      },
+      schools: [
+        {
+          schoolName: "",
+          yearAttended: "",
+          cityCountry: "",
+          classLevel: "",
+        },
+      ],
+      parents: {
+        father: {
+          type: "FATHER" as const,
+          detailsNotAvailable: false,
+          title: "",
+          firstName: "",
+          middleName: "",
+          lastName: "",
+          address: "",
+          email: "",
+          mobilePhone: "",
+          workPhone: "",
+          occupation: "",
+          companyName: "",
+          companyAddress: "",
+          nin: "",
+        },
+        mother: {
+          type: "MOTHER" as const,
+          detailsNotAvailable: false,
+          title: "",
+          firstName: "",
+          middleName: "",
+          lastName: "",
+          address: "",
+          email: "",
+          mobilePhone: "",
+          workPhone: "",
+          occupation: "",
+          companyName: "",
+          companyAddress: "",
+          nin: "",
+        },
+        guardian: {
+          type: "GUARDIAN" as const,
+          detailsNotAvailable: false,
+          title: "",
+          firstName: "",
+          middleName: "",
+          lastName: "",
+          address: "",
+          email: "",
+          mobilePhone: "",
+          workPhone: "",
+          occupation: "",
+          companyName: "",
+          companyAddress: "",
+          nin: "",
+        },
+      },
+      medical: {
+        emergencyContactName: "",
+        emergencyContactPhone: "",
+        emergencyContactRelationship: "",
+        medicalConditions: "",
+        allergies: "",
+        medications: "",
+        doctorName: "",
+        doctorPhone: "",
+      },
+      additional: {
+        specialNeeds: "",
+        previousSchoolIssues: "",
+        siblingsAtSchool: "",
+        howDidYouHear: "",
+      },
+      declaration: {
+        agreeToTerms: false,
+        agreeToDataProcessing: false,
+      },
+    },
+  })
+
+  const pathname = usePathname()
+
+  // Form persistence hook
+  const { getSavedData, clearSavedData, restoreData } = useFormPersistence(
+    methods,
+    currentStep,
+    setCurrentStep,
+    uploadedDocuments
+  )
+
+  // Track if we've already handled the resume prompt for this session
+  const [hasCheckedSavedData, setHasCheckedSavedData] = useState(false)
+
+  // Check for saved data - this function can be called multiple times safely
+  const checkForSavedData = useCallback(() => {
+    // Only show the modal if:
+    // 1. We haven't already shown it
+    // 2. User is on step 0 (hasn't started filling)
+    // 3. There's saved data
+    if (!hasCheckedSavedData && currentStep === 0) {
+      const saved = getSavedData()
+      if (saved && saved.currentStep > 0) {
+        setSavedApplicationData({
+          savedAt: saved.savedAt,
+          currentStep: saved.currentStep,
+          documentNames: saved.documentNames,
+        })
+        setShowResumeModal(true)
+      }
+      setHasCheckedSavedData(true)
+    }
+  }, [getSavedData, hasCheckedSavedData, currentStep])
+
+  // Check for saved data on mount and when pathname changes (navigation)
+  useEffect(() => {
+    checkForSavedData()
+  }, [pathname, checkForSavedData])
+
+  // Also check when the page becomes visible (user switches back to tab)
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === "visible" && currentStep === 0 && !showResumeModal) {
+        setHasCheckedSavedData(false) // Reset to allow re-check
+      }
+    }
+
+    document.addEventListener("visibilitychange", handleVisibilityChange)
+    return () => document.removeEventListener("visibilitychange", handleVisibilityChange)
+  }, [currentStep, showResumeModal])
+
+  const handleResumeApplication = () => {
+    const saved = getSavedData()
+    if (saved) {
+      restoreData(saved)
+    }
+    setShowResumeModal(false)
+  }
+
+  const handleStartFresh = () => {
+    clearSavedData()
+    methods.reset()
+    setCurrentStep(0)
+    setShowResumeModal(false)
+  }
+
+  const nextStep = async () => {
+    let isValid = false
+
+    // Validate current step
+    switch (currentStep) {
+      case 0: // Application Info
+        isValid = await methods.trigger(["campusId", "academicYearId", "applyingAs"])
+        break
+      case 1: // Student Details
+        isValid = await methods.trigger([
+          "student.firstName",
+          "student.lastName",
+          "student.dateOfBirth",
+          "student.gender",
+          "student.nationality",
+          "student.address",
+          "student.homeLanguage",
+          "student.firstLanguage",
+          "student.yearAppliedFor",
+          "student.stateOfOrigin",
+          "student.lga",
+          "student.placeOfBirth",
+        ])
+        break
+      case 2: // Child Lives With
+        isValid = await methods.trigger(["student.livesWith", "student.livesWithOther"])
+        break
+      case 3: // Schools Attended
+        isValid = await methods.trigger("schools")
+        break
+      case 4: // Parents/Guardian
+        isValid = await methods.trigger("parents")
+        break
+      case 5: // Medical & Emergency
+        isValid = await methods.trigger("medical")
+        break
+      case 6: // Additional Details
+        isValid = true // Optional fields
+        break
+      case 7: // Document Uploads
+        // Check if required documents are uploaded
+        const requiredDocs = [
+          "BIRTH_CERTIFICATE",
+          "CHARACTER_TESTIMONIAL",
+          "ACADEMIC_REPORT_1",
+          "ACADEMIC_REPORT_2",
+          "MEDICAL_HISTORY",
+          "PASSPORT_PHOTO",
+        ]
+        isValid = requiredDocs.every((doc) => uploadedDocuments[doc])
+        if (!isValid) {
+          alert("Please upload all required documents before proceeding.")
+        }
+        break
+      case 8: // Declaration
+        isValid = await methods.trigger("declaration")
+        break
+      default:
+        isValid = true
+    }
+
+    if (isValid) {
+      setCurrentStep((prev) => Math.min(prev + 1, STEPS.length - 1))
+    }
+  }
+
+  const prevStep = () => {
+    setCurrentStep((prev) => Math.max(prev - 1, 0))
+  }
+
+  const onSubmit = async (data: any) => {
+    setIsSubmitting(true)
+
+    try {
+      // Create FormData for file uploads
+      const formData = new FormData()
+      formData.append("data", JSON.stringify(data))
+
+      // Add documents
+      Object.entries(uploadedDocuments).forEach(([type, file]) => {
+        formData.append(type, file)
+      })
+
+      const response = await fetch("/api/applications", {
+        method: "POST",
+        body: formData,
+      })
+
+      if (!response.ok) {
+        const error = await response.json()
+        throw new Error(error.message || "Failed to submit application")
+      }
+
+      const result = await response.json()
+      
+      // Clear saved data on successful submission
+      clearSavedData()
+      
+      setSubmissionData({
+        applicationId: result.applicationId,
+        applicationFee: result.applicationFee,
+      })
+      setShowModal(true)
+    } catch (error) {
+      console.error("Submission error:", error)
+      alert(error instanceof Error ? error.message : "Failed to submit application. Please try again.")
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleStartNew = () => {
+    clearSavedData()
+    methods.reset()
+    setUploadedDocuments({})
+    setCurrentStep(0)
+    setShowModal(false)
+  }
+
+  const handleProceedToPayment = () => {
+    if (submissionData) {
+      window.location.href = `/payment?applicationId=${submissionData.applicationId}`
+    }
+  }
+
+  return (
+    <FormProvider {...methods}>
+      <form onSubmit={methods.handleSubmit(onSubmit)}>
+        <div className="flex flex-col lg:flex-row gap-8">
+          {/* Left sidebar - Progress Indicator */}
+          <div className="lg:w-72 shrink-0">
+            <div className="bg-white rounded-lg shadow-sm p-6 lg:sticky lg:top-6">
+              <ProgressIndicator steps={STEPS} currentStep={currentStep} />
+            </div>
+          </div>
+
+          {/* Right side - Form Content */}
+          <div className="flex-1 min-w-0">
+            <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
+              {currentStep === 0 && <ApplicationInfoStep campuses={campuses} academicYears={academicYears} />}
+              {currentStep === 1 && <StudentDetailsStep />}
+              {currentStep === 2 && <ChildLivesWithStep />}
+              {currentStep === 3 && <SchoolsAttendedStep />}
+              {currentStep === 4 && <ParentsGuardianStep />}
+              {currentStep === 5 && <MedicalEmergencyStep />}
+              {currentStep === 6 && <AdditionalDetailsStep />}
+              {currentStep === 7 && (
+                <DocumentUploadStep documents={uploadedDocuments} setDocuments={setUploadedDocuments} />
+              )}
+              {currentStep === 8 && <DeclarationStep />}
+              {currentStep === 9 && (
+                <ReviewStep
+                  formData={methods.getValues()}
+                  documents={uploadedDocuments}
+                  campuses={campuses}
+                  academicYears={academicYears}
+                />
+              )}
+            </div>
+
+            <div className="flex justify-between">
+              {currentStep > 0 && (
+                <button
+                  type="button"
+                  onClick={prevStep}
+                  className="px-6 py-3 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 font-medium"
+                >
+                  Previous
+                </button>
+              )}
+
+              {currentStep < STEPS.length - 1 && (
+                <button
+                  type="button"
+                  onClick={nextStep}
+                  className="ml-auto px-6 py-3 bg-maroon-800 text-white rounded-lg hover:bg-maroon-900 font-medium"
+                >
+                  Next
+                </button>
+              )}
+
+              {currentStep === STEPS.length - 1 && (
+                <button
+                  type="submit"
+                  disabled={isSubmitting || !methods.watch("declaration.agreeToTerms")}
+                  className="ml-auto px-8 py-3 bg-maroon-800 text-white rounded-lg hover:bg-maroon-900 font-semibold disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? "Submitting..." : "Submit Application"}
+                </button>
+              )}
+            </div>
+          </div>
+        </div>
+      </form>
+
+      {showModal && submissionData && (
+        <SubmissionModal onStartNew={handleStartNew} onProceedToPayment={handleProceedToPayment} />
+      )}
+
+      {showResumeModal && savedApplicationData && (
+        <ResumeApplicationModal
+          savedAt={savedApplicationData.savedAt}
+          savedStep={savedApplicationData.currentStep}
+          stepName={STEPS[savedApplicationData.currentStep]}
+          documentCount={savedApplicationData.documentNames.length}
+          onResume={handleResumeApplication}
+          onStartFresh={handleStartFresh}
+        />
+      )}
+    </FormProvider>
+  )
+}
