@@ -13,23 +13,9 @@ const workSans = localFont({
 export const metadata: Metadata = {
   title: "Greensprings Admissions Portal",
   description: "Apply for admission to Greensprings School - A leading educational institution",
-  generator: "v0.app",
   icons: {
-    icon: [
-      {
-        url: "/icon-light-32x32.png",
-        media: "(prefers-color-scheme: light)",
-      },
-      {
-        url: "/icon-dark-32x32.png",
-        media: "(prefers-color-scheme: dark)",
-      },
-      {
-        url: "/icon.svg",
-        type: "image/svg+xml",
-      },
-    ],
-    apple: "/apple-icon.png",
+    icon: "/GSL-Logo.png",
+    apple: "/GSL-Logo.png",
   },
 }
 
