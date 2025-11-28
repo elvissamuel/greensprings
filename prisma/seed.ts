@@ -50,22 +50,27 @@ async function main() {
   // Create academic years
   const currentYear = await prisma.academicYear.upsert({
     where: { year: "2024/2025" },
-    update: {},
+    update: {
+      year: "2025/2026",
+      startDate: new Date("2025-09-01"),
+      endDate: new Date("2026-07-31"),
+      active: true,
+    },
     create: {
-      year: "2024/2025",
-      startDate: new Date("2024-09-01"),
-      endDate: new Date("2025-07-31"),
+      year: "2025/2026",
+      startDate: new Date("2025-09-01"),
+      endDate: new Date("2026-07-31"),
       active: true,
     },
   })
 
   const nextYear = await prisma.academicYear.upsert({
-    where: { year: "2025/2026" },
+    where: { year: "2026/2027" },
     update: {},
     create: {
-      year: "2025/2026",
-      startDate: new Date("2025-09-01"),
-      endDate: new Date("2026-07-31"),
+      year: "2026/2027",
+      startDate: new Date("2026-09-01"),
+      endDate: new Date("2027-07-31"),
       active: true,
     },
   })
