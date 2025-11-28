@@ -435,11 +435,10 @@ export default function ApplicationForm({ campuses, academicYears }: Props) {
         break
       case 7: // Document Uploads
         // Only check required documents - optional documents can be left empty
-        // Required documents: ACADEMIC_REPORT_2, MEDICAL_HISTORY, PASSPORT_PHOTO
-        // Optional documents: BIRTH_CERTIFICATE, CHARACTER_TESTIMONIAL, ACADEMIC_REPORT_1, PSYCHOLOGICAL_ASSESSMENT
+        // Required documents: ACADEMIC_REPORT_2, PASSPORT_PHOTO
+        // Optional documents: BIRTH_CERTIFICATE, CHARACTER_TESTIMONIAL, ACADEMIC_REPORT_1, MEDICAL_HISTORY, PSYCHOLOGICAL_ASSESSMENT
         const requiredDocs = [
           "ACADEMIC_REPORT_2", // Academic Report (Previous Year) - REQUIRED
-          "MEDICAL_HISTORY", // Medical History Form - REQUIRED
           "PASSPORT_PHOTO", // Passport Photograph - REQUIRED
         ]
         const missingDocs: string[] = []
@@ -455,7 +454,6 @@ export default function ApplicationForm({ campuses, academicYears }: Props) {
         if (!isValid) {
           const docLabels: Record<string, string> = {
             ACADEMIC_REPORT_2: "Academic Report (Previous Year)",
-            MEDICAL_HISTORY: "Medical History Form",
             PASSPORT_PHOTO: "Passport Photograph",
           }
           const missingLabels = missingDocs.map((doc) => docLabels[doc] || doc).join(", ")

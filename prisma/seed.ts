@@ -51,9 +51,9 @@ async function main() {
   const currentYear = await prisma.academicYear.upsert({
     where: { year: "2024/2025" },
     update: {
-      year: "2025/2026",
-      startDate: new Date("2025-09-01"),
-      endDate: new Date("2026-07-31"),
+      year: "2026/2027",
+      startDate: new Date("2026-09-01"),
+      endDate: new Date("2027-07-31"),
       active: true,
     },
     create: {
