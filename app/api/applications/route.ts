@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
-import { put } from "@vercel/blob"
+import { uploadToCloudinary } from "@/lib/cloudinary"
 
 // Maximum file size: 8MB
 const MAX_FILE_SIZE = 8 * 1024 * 1024
@@ -69,7 +69,7 @@ export async function POST(request: NextRequest) {
       },
     })
 
-    // Handle file uploads with Vercel Blob Storage
+    // Handle file uploads with Cloudinary
     const documentTypes = [
       "BIRTH_CERTIFICATE",
       "CHARACTER_TESTIMONIAL",
@@ -94,13 +94,11 @@ export async function POST(request: NextRequest) {
           throw new Error(`File size exceeds 8MB for ${docType}`)
         }
 
-        // Upload to Vercel Blob Storage
-        const filename = `applications/${application.id}/${docType.toLowerCase()}_${Date.now()}${getFileExtension(file.name)}`
+        // Upload to Cloudinary
+        const folder = `applications/${application.id}`
+        const publicId = `${docType.toLowerCase()}_${Date.now()}`
         
-        const blob = await put(filename, file, {
-          access: "public",
-          contentType: file.type,
-        })
+        const uploadResult = await uploadToCloudinary(file, folder, publicId)
 
         // Save document record in database
         await prisma.document.create({
@@ -108,7 +106,7 @@ export async function POST(request: NextRequest) {
             applicationId: application.id,
             type: docType,
             filename: file.name,
-            path: blob.url,
+            path: uploadResult.secure_url,
             mimeType: file.type,
             size: file.size,
           },

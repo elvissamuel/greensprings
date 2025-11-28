@@ -37,8 +37,8 @@ export function DeclarationStep() {
             <span className="text-red-600 ml-1">*</span>
           </label>
         </div>
-        {errors.declaration?.agreeToTerms && (
-          <p className="text-red-600 text-sm ml-8">{errors.declaration.agreeToTerms.message as string}</p>
+        {(errors.declaration as any)?.agreeToTerms && (
+          <p className="text-red-600 text-sm ml-8">{(errors.declaration as any).agreeToTerms.message as string}</p>
         )}
 
         <div className="flex items-start">
@@ -55,8 +55,8 @@ export function DeclarationStep() {
             <span className="text-red-600 ml-1">*</span>
           </label>
         </div>
-        {errors.declaration?.agreeToDataProcessing && (
-          <p className="text-red-600 text-sm ml-8">{errors.declaration.agreeToDataProcessing.message as string}</p>
+        {(errors.declaration as any)?.agreeToDataProcessing && (
+          <p className="text-red-600 text-sm ml-8">{(errors.declaration as any).agreeToDataProcessing.message as string}</p>
         )}
       </div>
 

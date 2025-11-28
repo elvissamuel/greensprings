@@ -46,12 +46,12 @@ export default function HomePage() {
             <div className="flex-1 text-center lg:text-left">
               <div className="inline-flex items-center gap-2 bg-white/10 backdrop-blur-sm rounded-full px-4 py-2 mb-6">
                 <span className="w-2 h-2 bg-forest-400 rounded-full animate-pulse" />
-                <span className="text-forest-300 text-sm font-medium">Admissions Open for 2025/2026</span>
+                <span className="text-forest-300 text-sm font-medium">Scholarships Open for 2026/2027</span>
               </div>
               
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-white mb-6 leading-tight">
-                Shape Your Child&apos;s
-                <span className="block text-gold-400">Future Today</span>
+              <h1 className="text-4xl md:text-5xl lg:text-5xl font-bold text-white mb-6 leading-tight">
+                Scholarship Exams Now Open for
+                <span className="block text-gold-400">2026/2027</span>
               </h1>
               
               <p className="text-lg text-maroon-100 mb-8 max-w-xl mx-auto lg:mx-0">

@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect, useCallback } from "react"
+import { useState, useEffect, useCallback, useRef } from "react"
 import { useForm, FormProvider } from "react-hook-form"
 import { usePathname } from "next/navigation"
 import { ApplicationInfoStep } from "./steps/application-info-step"
@@ -51,6 +51,7 @@ export default function ApplicationForm({ campuses, academicYears }: Props) {
   const [currentStep, setCurrentStep] = useState(0)
   const [uploadedDocuments, setUploadedDocuments] = useState<Record<string, File>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const isSubmittingRef = useRef(false)
   const [showModal, setShowModal] = useState(false)
   const [showResumeModal, setShowResumeModal] = useState(false)
   const [savedApplicationData, setSavedApplicationData] = useState<{
@@ -493,6 +494,12 @@ export default function ApplicationForm({ campuses, academicYears }: Props) {
   }
 
   const onSubmit = async (data: any) => {
+    // Prevent double submission
+    if (isSubmittingRef.current || isSubmitting) {
+      return
+    }
+
+    isSubmittingRef.current = true
     setIsSubmitting(true)
 
     try {
@@ -525,10 +532,12 @@ export default function ApplicationForm({ campuses, academicYears }: Props) {
         applicationFee: result.applicationFee,
       })
       setShowModal(true)
+      // Keep isSubmittingRef as true to prevent resubmission until modal is closed
+      // Don't reset here - let handleStartNew reset it
     } catch (error) {
       console.error("Submission error:", error)
       alert(error instanceof Error ? error.message : "Failed to submit application. Please try again.")
-    } finally {
+      isSubmittingRef.current = false
       setIsSubmitting(false)
     }
   }
@@ -539,6 +548,8 @@ export default function ApplicationForm({ campuses, academicYears }: Props) {
     setUploadedDocuments({})
     setCurrentStep(0)
     setShowModal(false)
+    isSubmittingRef.current = false
+    setIsSubmitting(false)
   }
 
   const handleProceedToPayment = () => {
@@ -549,7 +560,15 @@ export default function ApplicationForm({ campuses, academicYears }: Props) {
 
   return (
     <FormProvider {...methods}>
-      <form onSubmit={methods.handleSubmit(onSubmit)}>
+      <form
+        onSubmit={methods.handleSubmit((data) => {
+          // Additional check to prevent double submission
+          if (isSubmittingRef.current || isSubmitting) {
+            return
+          }
+          onSubmit(data)
+        })}
+      >
         <div className="flex flex-col lg:flex-row gap-8">
           {/* Left sidebar - Progress Indicator */}
           <div className="lg:w-72 shrink-0">
