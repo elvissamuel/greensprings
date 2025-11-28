@@ -34,9 +34,11 @@ async function main() {
 
   const lekki1Campus = await prisma.campus.upsert({
     where: { name: "Lekki 1 Campus" },
-    update: {},
+    update: {
+      name: "Lekki Campus",
+    },
     create: {
-      name: "Lekki 1 Campus",
+      name: "Lekki Campus",
       location: "Lekki Phase 1, Lagos",
       fee: 5000000,
       active: true,
