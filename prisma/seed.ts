@@ -33,7 +33,7 @@ async function main() {
   })
 
   const lekki1Campus = await prisma.campus.upsert({
-    where: { name: "Lekki 1 Campus" },
+    where: { name: "Lekki Campus" },
     update: {
       name: "Lekki Campus",
     },
