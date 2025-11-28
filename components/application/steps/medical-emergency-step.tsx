@@ -23,7 +23,7 @@ export function MedicalEmergencyStep() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
         <FormField
           label="Emergency Contact Name"
-          error={errors.medical?.emergencyContactName?.message as string}
+          error={(errors.medical as any)?.emergencyContactName?.message as string}
           required
         >
           <input
@@ -35,7 +35,7 @@ export function MedicalEmergencyStep() {
 
         <FormField
           label="Emergency Contact Phone"
-          error={errors.medical?.emergencyContactPhone?.message as string}
+          error={(errors.medical as any)?.emergencyContactPhone?.message as string}
           required
         >
           <input
@@ -47,7 +47,7 @@ export function MedicalEmergencyStep() {
 
         <FormField
           label="Relationship"
-          error={errors.medical?.emergencyContactRelationship?.message as string}
+          error={(errors.medical as any)?.emergencyContactRelationship?.message as string}
           required
         >
           <input
@@ -63,7 +63,7 @@ export function MedicalEmergencyStep() {
         <p className="text-sm text-blue-800">Please provide any relevant medical information about the child.</p>
       </div>
 
-      <FormField label="Medical Conditions" error={errors.medical?.medicalConditions?.message as string}>
+      <FormField label="Medical Conditions" error={(errors.medical as any)?.medicalConditions?.message as string}>
         <textarea
           {...register("medical.medicalConditions")}
           rows={3}
@@ -72,7 +72,7 @@ export function MedicalEmergencyStep() {
         />
       </FormField>
 
-      <FormField label="Allergies" error={errors.medical?.allergies?.message as string}>
+      <FormField label="Allergies" error={(errors.medical as any)?.allergies?.message as string}>
         <textarea
           {...register("medical.allergies")}
           rows={2}
@@ -81,7 +81,7 @@ export function MedicalEmergencyStep() {
         />
       </FormField>
 
-      <FormField label="Current Medications" error={errors.medical?.medications?.message as string}>
+      <FormField label="Current Medications" error={(errors.medical as any)?.medications?.message as string}>
         <textarea
           {...register("medical.medications")}
           rows={2}
@@ -91,7 +91,7 @@ export function MedicalEmergencyStep() {
       </FormField>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <FormField label="Family Doctor Name" error={errors.medical?.doctorName?.message as string}>
+        <FormField label="Family Doctor Name" error={(errors.medical as any)?.doctorName?.message as string}>
           <input
             type="text"
             {...register("medical.doctorName")}
@@ -99,7 +99,7 @@ export function MedicalEmergencyStep() {
           />
         </FormField>
 
-        <FormField label="Family Doctor Phone" error={errors.medical?.doctorPhone?.message as string}>
+        <FormField label="Family Doctor Phone" error={(errors.medical as any)?.doctorPhone?.message as string}>
           <input
             type="tel"
             {...register("medical.doctorPhone")}

@@ -12,7 +12,7 @@ const REQUIRED_DOCUMENTS = [
   { type: "CHARACTER_TESTIMONIAL", label: "Character Testimonial", required: false },
   { type: "ACADEMIC_REPORT_1", label: "Academic Report (Most Recent)", required: false },
   { type: "ACADEMIC_REPORT_2", label: "Academic Report (Previous Year)", required: true },
-  { type: "MEDICAL_HISTORY", label: "Medical History Form", required: true, downloadable: true },
+  { type: "MEDICAL_HISTORY", label: "Medical History Form", required: false, downloadable: true },
   { type: "PASSPORT_PHOTO", label: "Passport Photograph", required: true },
   { type: "PSYCHOLOGICAL_ASSESSMENT", label: "Psychological Assessment (if applicable)", required: false },
 ]
