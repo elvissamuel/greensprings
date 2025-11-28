@@ -155,9 +155,8 @@ export default function ApplicationForm({ campuses, academicYears }: Props) {
         doctorPhone: "",
       },
       additional: {
-        specialNeeds: "",
-        previousSchoolIssues: "",
-        siblingsAtSchool: "",
+        linksToSchool: "",
+        linksToSchoolOther: "",
         howDidYouHear: "",
       },
       declaration: {
@@ -234,60 +233,251 @@ export default function ApplicationForm({ campuses, academicYears }: Props) {
 
   const nextStep = async () => {
     let isValid = false
+    const formValues = methods.getValues()
 
     // Validate current step
     switch (currentStep) {
       case 0: // Application Info
-        isValid = await methods.trigger(["campusId", "academicYearId", "applyingAs"])
+        // Check required fields manually
+        if (!formValues.campusId || !formValues.academicYearId || !formValues.applyingAs) {
+          isValid = false
+          if (!formValues.campusId) {
+            methods.setError("campusId", { type: "required", message: "Campus is required" })
+          }
+          if (!formValues.academicYearId) {
+            methods.setError("academicYearId", { type: "required", message: "Academic Year is required" })
+          }
+          if (!formValues.applyingAs) {
+            methods.setError("applyingAs", { type: "required", message: "Applying As is required" })
+          }
+        } else {
+          isValid = true
+        }
         break
       case 1: // Student Details
-        isValid = await methods.trigger([
-          "student.firstName",
-          "student.lastName",
-          "student.dateOfBirth",
-          "student.gender",
-          "student.nationality",
-          "student.address",
-          "student.homeLanguage",
-          "student.firstLanguage",
-          "student.yearAppliedFor",
-          "student.stateOfOrigin",
-          "student.lga",
-          "student.placeOfBirth",
-        ])
+        // Check all required student fields
+        const student = formValues.student
+        if (
+          !student?.firstName ||
+          !student?.lastName ||
+          !student?.dateOfBirth ||
+          !student?.gender ||
+          !student?.nationality ||
+          !student?.address ||
+          !student?.homeLanguage ||
+          !student?.firstLanguage ||
+          !student?.yearAppliedFor ||
+          !student?.stateOfOrigin ||
+          !student?.lga ||
+          !student?.placeOfBirth
+        ) {
+          isValid = false
+          if (!student?.firstName) {
+            methods.setError("student.firstName", { type: "required", message: "First name is required" })
+          }
+          if (!student?.lastName) {
+            methods.setError("student.lastName", { type: "required", message: "Last name is required" })
+          }
+          if (!student?.dateOfBirth) {
+            methods.setError("student.dateOfBirth", { type: "required", message: "Date of birth is required" })
+          }
+          if (!student?.gender) {
+            methods.setError("student.gender", { type: "required", message: "Gender is required" })
+          }
+          if (!student?.nationality) {
+            methods.setError("student.nationality", { type: "required", message: "Nationality is required" })
+          }
+          if (!student?.address) {
+            methods.setError("student.address", { type: "required", message: "Address is required" })
+          }
+          if (!student?.homeLanguage) {
+            methods.setError("student.homeLanguage", { type: "required", message: "Home language is required" })
+          }
+          if (!student?.firstLanguage) {
+            methods.setError("student.firstLanguage", { type: "required", message: "First language is required" })
+          }
+          if (!student?.yearAppliedFor) {
+            methods.setError("student.yearAppliedFor", { type: "required", message: "Year applied for is required" })
+          }
+          if (!student?.stateOfOrigin) {
+            methods.setError("student.stateOfOrigin", { type: "required", message: "State of origin is required" })
+          }
+          if (!student?.lga) {
+            methods.setError("student.lga", { type: "required", message: "LGA is required" })
+          }
+          if (!student?.placeOfBirth) {
+            methods.setError("student.placeOfBirth", { type: "required", message: "Place of birth is required" })
+          }
+        } else {
+          isValid = true
+        }
         break
       case 2: // Child Lives With
-        isValid = await methods.trigger(["student.livesWith", "student.livesWithOther"])
+        const livesWith = formValues.student?.livesWith as string | undefined
+        if (!livesWith) {
+          isValid = false
+          methods.setError("student.livesWith", { type: "required", message: "This field is required" })
+        } else {
+          // If "other" is selected, livesWithOther is required
+          const livesWithStr = String(livesWith)
+          if (livesWithStr === "other") {
+            const livesWithOther = formValues.student?.livesWithOther
+            if (!livesWithOther) {
+              isValid = false
+              methods.setError("student.livesWithOther", { type: "required", message: "Please specify who the child lives with" })
+            } else {
+              isValid = true
+            }
+          } else {
+            isValid = true
+          }
+        }
         break
       case 3: // Schools Attended
-        isValid = await methods.trigger("schools")
+        // Check that at least one school has all required fields
+        const schools = formValues.schools || []
+        if (schools.length === 0) {
+          isValid = false
+          methods.setError("schools", { type: "required", message: "At least one school record is required" })
+        } else {
+          const allSchoolsValid = schools.every(
+            (school: any) =>
+              school.schoolName && school.yearAttended && school.cityCountry && school.classLevel
+          )
+          if (!allSchoolsValid) {
+            isValid = false
+            // Set errors for incomplete schools
+            schools.forEach((school: any, index: number) => {
+              if (!school.schoolName) {
+                methods.setError(`schools.${index}.schoolName`, { type: "required", message: "School name is required" })
+              }
+              if (!school.yearAttended) {
+                methods.setError(`schools.${index}.yearAttended`, { type: "required", message: "Year attended is required" })
+              }
+              if (!school.cityCountry) {
+                methods.setError(`schools.${index}.cityCountry`, { type: "required", message: "City/Country is required" })
+              }
+              if (!school.classLevel) {
+                methods.setError(`schools.${index}.classLevel`, { type: "required", message: "Class/Level is required" })
+              }
+            })
+          } else {
+            isValid = true
+          }
+        }
         break
       case 4: // Parents/Guardian
-        isValid = await methods.trigger("parents")
+        // Validate father and mother (guardian is optional)
+        const father = formValues.parents?.father
+        const mother = formValues.parents?.mother
+
+        // Check father
+        let fatherValid = true
+        if (!father?.detailsNotAvailable) {
+          if (!father?.firstName || !father?.lastName || !father?.mobilePhone) {
+            fatherValid = false
+            if (!father?.firstName) {
+              methods.setError("parents.father.firstName", { type: "required", message: "First name is required" })
+            }
+            if (!father?.lastName) {
+              methods.setError("parents.father.lastName", { type: "required", message: "Last name is required" })
+            }
+            if (!father?.mobilePhone) {
+              methods.setError("parents.father.mobilePhone", { type: "required", message: "Mobile phone is required" })
+            }
+          }
+        }
+
+        // Check mother
+        let motherValid = true
+        if (!mother?.detailsNotAvailable) {
+          if (!mother?.firstName || !mother?.lastName || !mother?.mobilePhone) {
+            motherValid = false
+            if (!mother?.firstName) {
+              methods.setError("parents.mother.firstName", { type: "required", message: "First name is required" })
+            }
+            if (!mother?.lastName) {
+              methods.setError("parents.mother.lastName", { type: "required", message: "Last name is required" })
+            }
+            if (!mother?.mobilePhone) {
+              methods.setError("parents.mother.mobilePhone", { type: "required", message: "Mobile phone is required" })
+            }
+          }
+        }
+
+        isValid = fatherValid && motherValid
         break
       case 5: // Medical & Emergency
-        isValid = await methods.trigger("medical")
+        // Check required emergency contact fields
+        const medical = formValues.medical
+        if (
+          !medical?.emergencyContactName ||
+          !medical?.emergencyContactPhone ||
+          !medical?.emergencyContactRelationship
+        ) {
+          isValid = false
+          if (!medical?.emergencyContactName) {
+            methods.setError("medical.emergencyContactName", { type: "required", message: "Emergency contact name is required" })
+          }
+          if (!medical?.emergencyContactPhone) {
+            methods.setError("medical.emergencyContactPhone", { type: "required", message: "Emergency contact phone is required" })
+          }
+          if (!medical?.emergencyContactRelationship) {
+            methods.setError("medical.emergencyContactRelationship", { type: "required", message: "Emergency contact relationship is required" })
+          }
+        } else {
+          isValid = true
+        }
         break
       case 6: // Additional Details
         isValid = true // Optional fields
         break
       case 7: // Document Uploads
-        // Check if required documents are uploaded
+        // Only check required documents - optional documents can be left empty
+        // Required documents: ACADEMIC_REPORT_2, MEDICAL_HISTORY, PASSPORT_PHOTO
+        // Optional documents: BIRTH_CERTIFICATE, CHARACTER_TESTIMONIAL, ACADEMIC_REPORT_1, PSYCHOLOGICAL_ASSESSMENT
         const requiredDocs = [
-          "BIRTH_CERTIFICATE",
-          "CHARACTER_TESTIMONIAL",
-          "ACADEMIC_REPORT_1",
-          "ACADEMIC_REPORT_2",
-          "MEDICAL_HISTORY",
-          "PASSPORT_PHOTO",
+          "ACADEMIC_REPORT_2", // Academic Report (Previous Year) - REQUIRED
+          "MEDICAL_HISTORY", // Medical History Form - REQUIRED
+          "PASSPORT_PHOTO", // Passport Photograph - REQUIRED
         ]
-        isValid = requiredDocs.every((doc) => uploadedDocuments[doc])
+        const missingDocs: string[] = []
+        requiredDocs.forEach((doc) => {
+          // Check if document exists and is a valid File object
+          const uploadedDoc = uploadedDocuments[doc]
+          if (!uploadedDoc || !(uploadedDoc instanceof File) || uploadedDoc.size === 0) {
+            missingDocs.push(doc)
+          }
+        })
+        // Only validate required documents - optional documents are ignored
+        isValid = missingDocs.length === 0
         if (!isValid) {
-          alert("Please upload all required documents before proceeding.")
+          const docLabels: Record<string, string> = {
+            ACADEMIC_REPORT_2: "Academic Report (Previous Year)",
+            MEDICAL_HISTORY: "Medical History Form",
+            PASSPORT_PHOTO: "Passport Photograph",
+          }
+          const missingLabels = missingDocs.map((doc) => docLabels[doc] || doc).join(", ")
+          alert(`Please upload all required documents before proceeding: ${missingLabels}`)
+        } else {
+          // All required documents are present - allow proceeding even if optional ones are missing
+          isValid = true
         }
         break
       case 8: // Declaration
-        isValid = await methods.trigger("declaration")
+        // Check both checkboxes are checked
+        const declaration = formValues.declaration
+        if (!declaration?.agreeToTerms || !declaration?.agreeToDataProcessing) {
+          isValid = false
+          if (!declaration?.agreeToTerms) {
+            methods.setError("declaration.agreeToTerms", { type: "required", message: "You must agree to the terms to continue" })
+          }
+          if (!declaration?.agreeToDataProcessing) {
+            methods.setError("declaration.agreeToDataProcessing", { type: "required", message: "You must consent to data processing to continue" })
+          }
+        } else {
+          isValid = true
+        }
         break
       default:
         isValid = true

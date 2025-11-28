@@ -21,25 +21,25 @@ export const studentDetailsSchema = z.object({
 })
 
 // Step 2: Child Lives With
-export const childLivesWithSchema = z
-  .object({
-    livesWith: z.enum(["both_parents", "mother", "father", "guardian", "other"], {
-      required_error: "This field is required.",
-    }),
-    livesWithOther: z.string().optional(),
-  })
-  .refine(
-    (data) => {
-      if (data.livesWith === "other") {
-        return !!data.livesWithOther
-      }
-      return true
-    },
-    {
-      message: "Please specify who the child lives with",
-      path: ["livesWithOther"],
-    },
-  )
+const childLivesWithBaseSchema = z.object({
+  livesWith: z.enum(["both_parents", "mother", "father", "guardian", "other"], {
+    required_error: "This field is required.",
+  }),
+  livesWithOther: z.string().optional(),
+})
+
+export const childLivesWithSchema = childLivesWithBaseSchema.refine(
+  (data) => {
+    if (data.livesWith === "other") {
+      return !!data.livesWithOther
+    }
+    return true
+  },
+  {
+    message: "Please specify who the child lives with",
+    path: ["livesWithOther"],
+  },
+)
 
 // Step 3: Schools Attended
 export const schoolRecordSchema = z.object({
@@ -105,9 +105,8 @@ export const medicalEmergencySchema = z.object({
 
 // Step 6: Additional Details
 export const additionalDetailsSchema = z.object({
-  specialNeeds: z.string().optional(),
-  previousSchoolIssues: z.string().optional(),
-  siblingsAtSchool: z.string().optional(),
+  linksToSchool: z.string().optional(),
+  linksToSchoolOther: z.string().optional(),
   howDidYouHear: z.string().optional(),
 })
 
@@ -138,7 +137,18 @@ export const completeApplicationSchema = z.object({
   applyingAs: z.enum(["new_student", "returning_student", "transfer_student"]),
 
   // Student details
-  student: studentDetailsSchema.merge(childLivesWithSchema),
+  student: studentDetailsSchema.merge(childLivesWithBaseSchema).refine(
+    (data) => {
+      if (data.livesWith === "other") {
+        return !!data.livesWithOther
+      }
+      return true
+    },
+    {
+      message: "Please specify who the child lives with",
+      path: ["livesWithOther"],
+    },
+  ),
 
   // Schools
   schools: z.array(schoolRecordSchema).min(1),

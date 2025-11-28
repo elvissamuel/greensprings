@@ -8,9 +8,9 @@ type Props = {
 }
 
 const REQUIRED_DOCUMENTS = [
-  { type: "BIRTH_CERTIFICATE", label: "Birth Certificate", required: true },
-  { type: "CHARACTER_TESTIMONIAL", label: "Character Testimonial", required: true },
-  { type: "ACADEMIC_REPORT_1", label: "Academic Report (Most Recent)", required: true },
+  { type: "BIRTH_CERTIFICATE", label: "Birth Certificate", required: false },
+  { type: "CHARACTER_TESTIMONIAL", label: "Character Testimonial", required: false },
+  { type: "ACADEMIC_REPORT_1", label: "Academic Report (Most Recent)", required: false },
   { type: "ACADEMIC_REPORT_2", label: "Academic Report (Previous Year)", required: true },
   { type: "MEDICAL_HISTORY", label: "Medical History Form", required: true, downloadable: true },
   { type: "PASSPORT_PHOTO", label: "Passport Photograph", required: true },
@@ -88,8 +88,8 @@ export function DocumentUploadStep({ documents, setDocuments }: Props) {
                 </label>
                 {doc.downloadable && (
                   <a
-                    href="/forms/medical-history-form.pdf"
-                    download
+                    href="/Medical-History-Form.pdf"
+                    download="Medical-History-Form.pdf"
                     className="text-sm text-maroon-800 hover:text-maroon-900 underline"
                   >
                     Download Medical History Form
@@ -109,6 +109,7 @@ export function DocumentUploadStep({ documents, setDocuments }: Props) {
 
             <input
               type="file"
+              key={doc.type}
               accept=".jpg,.jpeg,.png,.pdf"
               onChange={(e) => handleFileChange(doc.type, e.target.files?.[0] || null)}
               className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maroon-600 focus:border-transparent text-sm"
