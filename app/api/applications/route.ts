@@ -6,7 +6,7 @@ import { uploadToCloudinary } from "@/lib/cloudinary"
 const MAX_FILE_SIZE = 8 * 1024 * 1024
 
 // Allowed MIME types
-const ALLOWED_TYPES = ["image/jpeg", "image/png", "application/pdf"]
+const ALLOWED_TYPES = ["image/jpeg", "image/png", "application/pdf", "image/jpg", "image/webp"]
 
 export async function POST(request: NextRequest) {
   try {
