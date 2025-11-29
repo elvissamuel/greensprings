@@ -2,20 +2,57 @@ import { prisma } from "@/lib/prisma"
 import { formatCurrency } from "@/lib/utils"
 import { AdminHeader } from "@/components/admin/admin-header"
 import { ApplicationActions } from "@/components/admin/application-actions"
+import { Prisma } from "@prisma/client"
+
+// Disable caching for this page to ensure fresh data
+export const revalidate = 0
+export const dynamic = "force-dynamic"
+
+type ApplicationWithRelations = Prisma.ApplicationGetPayload<{
+  include: {
+    applicant: true
+    campus: true
+    academicYear: true
+    payment: true
+    documents: true
+  }
+}>
 
 export default async function AdminApplicationsPage() {
-  const applications = await prisma.application.findMany({
-    include: {
-      applicant: true,
-      campus: true,
-      academicYear: true,
-      payment: true,
-      documents: true,
-    },
-    orderBy: {
-      createdAt: "desc",
-    },
-  })
+  let applications: ApplicationWithRelations[] = []
+  let error: string | null = null
+
+  try {
+    // First, get the total count to verify database connection
+    const totalCount = await prisma.application.count()
+    
+    // Fetch all applications with all relations
+    applications = await prisma.application.findMany({
+      include: {
+        applicant: true,
+        campus: true,
+        academicYear: true,
+        payment: true,
+        documents: true,
+      },
+      orderBy: {
+        createdAt: "desc",
+      },
+    })
+
+    // Log for debugging
+    console.log(`[Admin Applications] Total count: ${totalCount}, Fetched: ${applications.length}`)
+    
+    // Warn if there's a mismatch
+    if (totalCount !== applications.length) {
+      console.warn(
+        `[Admin Applications] Mismatch detected! Database has ${totalCount} records but query returned ${applications.length}`
+      )
+    }
+  } catch (err) {
+    console.error("Error fetching applications:", err)
+    error = err instanceof Error ? err.message : "Failed to load applications"
+  }
 
   const stats = {
     total: applications.length,
@@ -34,6 +71,11 @@ export default async function AdminApplicationsPage() {
           <div className="mb-8">
             <h1 className="text-2xl font-bold text-gray-900">Applications</h1>
             <p className="text-gray-600 mt-1">Manage and review submitted applications</p>
+            {error && (
+              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                <p className="text-red-800 text-sm">Error: {error}</p>
+              </div>
+            )}
           </div>
 
           {/* Stats Cards */}
