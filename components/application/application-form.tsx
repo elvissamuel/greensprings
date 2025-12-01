@@ -654,6 +654,7 @@ export default function ApplicationForm({ campuses, academicYears, leadContact, 
   return (
     <FormProvider {...methods}>
       <form
+        noValidate
         onSubmit={methods.handleSubmit((data) => {
           // Additional check to prevent double submission
           if (isSubmittingRef.current || isSubmitting) {
