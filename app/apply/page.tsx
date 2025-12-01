@@ -1,6 +1,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import ApplicationForm from "@/components/application/application-form"
+import { LeadIdRedirect } from "@/components/apply/lead-id-redirect"
 import { prisma } from "@/lib/prisma"
 
 type ApplyPageProps = {
@@ -29,6 +30,9 @@ export default async function ApplyPage({ searchParams }: ApplyPageProps) {
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-maroon-50 via-gray-50 to-forest-50">
+        {/* Client-side redirect to add leadId from localStorage to URL */}
+        <LeadIdRedirect />
+
         {/* Header */}
         <header className="bg-white border-b border-maroon-100 sticky top-0 z-40">
           <div className="container mx-auto px-4 py-3">

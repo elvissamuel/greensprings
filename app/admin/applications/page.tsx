@@ -68,14 +68,24 @@ export default async function AdminApplicationsPage() {
       <div className="p-6">
         <div className="max-w-7xl mx-auto">
           {/* Page Header */}
-          <div className="mb-8">
-            <h1 className="text-2xl font-bold text-gray-900">Applications</h1>
-            <p className="text-gray-600 mt-1">Manage and review submitted applications</p>
-            {error && (
-              <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <p className="text-red-800 text-sm">Error: {error}</p>
-              </div>
-            )}
+          <div className="mb-8 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h1 className="text-2xl font-bold text-gray-900">Applications</h1>
+              <p className="text-gray-600 mt-1">Manage and review submitted applications</p>
+              {error && (
+                <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
+                  <p className="text-red-800 text-sm">Error: {error}</p>
+                </div>
+              )}
+            </div>
+            <div className="flex items-center gap-3">
+              <a
+                href="/admin/leads"
+                className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
+              >
+                View Leads &amp; Progress
+              </a>
+            </div>
           </div>
 
           {/* Stats Cards */}
