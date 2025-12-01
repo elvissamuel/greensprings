@@ -595,6 +595,18 @@ export default function ApplicationForm({ campuses, academicYears, leadContact, 
       return
     }
 
+    // Validate total file size before submission (Next.js/Vercel limit is ~4.5MB)
+    const MAX_TOTAL_SIZE = 4 * 1024 * 1024 // 4MB total limit to be safe
+    const totalSize = Object.values(uploadedDocuments).reduce((sum, file) => sum + file.size, 0)
+    
+    if (totalSize > MAX_TOTAL_SIZE) {
+      const totalSizeMB = (totalSize / (1024 * 1024)).toFixed(2)
+      alert(
+        `Total file size (${totalSizeMB}MB) exceeds the limit. Please reduce file sizes or remove some documents. Maximum total size is 4MB.`
+      )
+      return
+    }
+
     isSubmittingRef.current = true
     setIsSubmitting(true)
 
@@ -614,8 +626,22 @@ export default function ApplicationForm({ campuses, academicYears, leadContact, 
       })
 
       if (!response.ok) {
-        const error = await response.json()
-        throw new Error(error.message || "Failed to submit application")
+        // Handle 413 specifically
+        if (response.status === 413) {
+          throw new Error(
+            "Request too large. Please reduce file sizes or remove some documents. Maximum total size is 4MB."
+          )
+        }
+        
+        let errorMessage = "Failed to submit application"
+        try {
+          const error = await response.json()
+          errorMessage = error.message || errorMessage
+        } catch {
+          // If response isn't JSON, use status text
+          errorMessage = response.statusText || errorMessage
+        }
+        throw new Error(errorMessage)
       }
 
       const result = await response.json()
