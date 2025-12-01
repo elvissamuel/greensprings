@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server"
 import { prisma } from "@/lib/prisma"
 import { uploadToCloudinary } from "@/lib/cloudinary"
+import { applicationApiSchema } from "@/lib/validations/application-schema"
 
 // Maximum file size: 8MB
 const MAX_FILE_SIZE = 8 * 1024 * 1024
@@ -17,7 +18,32 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ message: "No data provided" }, { status: 400 })
     }
 
-    const data = JSON.parse(dataString)
+    let parsedData
+    try {
+      parsedData = JSON.parse(dataString)
+    } catch (error) {
+      return NextResponse.json({ message: "Invalid JSON data" }, { status: 400 })
+    }
+
+    // Validate data against schema
+    const validationResult = applicationApiSchema.safeParse(parsedData)
+    
+    if (!validationResult.success) {
+      const errors = validationResult.error.errors.map((err) => ({
+        path: err.path.join("."),
+        message: err.message,
+      }))
+      console.error("[API] Validation errors:", errors)
+      return NextResponse.json(
+        {
+          message: "Validation failed",
+          errors,
+        },
+        { status: 400 }
+      )
+    }
+
+    const data = validationResult.data
 
     // Create application
     const application = await prisma.application.create({

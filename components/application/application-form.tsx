@@ -2,7 +2,9 @@
 
 import { useState, useEffect, useCallback, useRef } from "react"
 import { useForm, FormProvider } from "react-hook-form"
+import { zodResolver } from "@hookform/resolvers/zod"
 import { usePathname } from "next/navigation"
+import { applicationFormSchema, type ApplicationFormData } from "@/lib/validations/application-schema"
 import { ApplicationInfoStep } from "./steps/application-info-step"
 import { StudentDetailsStep } from "./steps/student-details-step"
 import { ChildLivesWithStep } from "./steps/child-lives-with-step"
@@ -71,7 +73,8 @@ export default function ApplicationForm({ campuses, academicYears, leadContact, 
   } | null>(null)
   const [submissionData, setSubmissionData] = useState<{ applicationId: string; applicationFee: number } | null>(null)
 
-  const methods = useForm({
+  const methods = useForm<ApplicationFormData>({
+    resolver: zodResolver(applicationFormSchema),
     mode: "onBlur",
     defaultValues: {
       campusId: "",
@@ -586,7 +589,7 @@ export default function ApplicationForm({ campuses, academicYears, leadContact, 
     setCurrentStep((prev) => Math.max(prev - 1, 0))
   }
 
-  const onSubmit = async (data: any) => {
+  const onSubmit = async (data: ApplicationFormData) => {
     // Prevent double submission
     if (isSubmittingRef.current || isSubmitting) {
       return
@@ -654,7 +657,6 @@ export default function ApplicationForm({ campuses, academicYears, leadContact, 
   return (
     <FormProvider {...methods}>
       <form
-        noValidate
         onSubmit={methods.handleSubmit((data) => {
           // Additional check to prevent double submission
           if (isSubmittingRef.current || isSubmitting) {
