@@ -39,9 +39,11 @@ export function MedicalEmergencyStep() {
           required
         >
           <input
-            type="tel"
+            type="text"
+            inputMode="tel"
             {...register("medical.emergencyContactPhone")}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maroon-600 focus:border-transparent"
+            placeholder="+234..."
           />
         </FormField>
 
@@ -101,9 +103,11 @@ export function MedicalEmergencyStep() {
 
         <FormField label="Family Doctor Phone" error={(errors.medical as any)?.doctorPhone?.message as string}>
           <input
-            type="tel"
+            type="text"
+            inputMode="tel"
             {...register("medical.doctorPhone")}
             className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maroon-600 focus:border-transparent"
+            placeholder="+234..."
           />
         </FormField>
       </div>

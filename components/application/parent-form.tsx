@@ -104,9 +104,11 @@ export function ParentForm({ type, label }: Props) {
 
             <FormField label="Mobile Phone" error={parentErrors?.mobilePhone?.message as string} required>
               <input
-                type="tel"
+                type="text"
+                inputMode="tel"
                 {...register(`parents.${type}.mobilePhone`)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maroon-500 focus:border-transparent"
+                placeholder="+234..."
               />
             </FormField>
           </div>
@@ -114,9 +116,11 @@ export function ParentForm({ type, label }: Props) {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <FormField label="Work Phone" error={parentErrors?.workPhone?.message as string}>
               <input
-                type="tel"
+                type="text"
+                inputMode="tel"
                 {...register(`parents.${type}.workPhone`)}
                 className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-maroon-500 focus:border-transparent"
+                placeholder="+234..."
               />
             </FormField>
 
