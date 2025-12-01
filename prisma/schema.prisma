@@ -155,3 +155,17 @@ model Payment {
   createdAt         DateTime    @default(now())
   updatedAt         DateTime    @updatedAt
 }
+
+model Lead {
+  id          String   @id @default(cuid())
+  name        String
+  email       String
+  phone       String
+  source      String?  // e.g., "hero_form"
+  currentStep Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@index([createdAt])
+}
+

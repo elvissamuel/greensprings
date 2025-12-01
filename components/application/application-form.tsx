@@ -29,9 +29,17 @@ type AcademicYear = {
   year: string
 }
 
+type LeadContact = {
+  name: string
+  email: string
+  phone: string
+}
+
 type Props = {
   campuses: Campus[]
   academicYears: AcademicYear[]
+  leadContact?: LeadContact
+  leadId?: string
 }
 
 const STEPS = [
@@ -47,7 +55,9 @@ const STEPS = [
   "Review & Submit",
 ]
 
-export default function ApplicationForm({ campuses, academicYears }: Props) {
+const LEAD_ID_STORAGE_KEY = "greensprings_lead_id"
+
+export default function ApplicationForm({ campuses, academicYears, leadContact, leadId }: Props) {
   const [currentStep, setCurrentStep] = useState(0)
   const [uploadedDocuments, setUploadedDocuments] = useState<Record<string, File>>({})
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -179,6 +189,91 @@ export default function ApplicationForm({ campuses, academicYears }: Props) {
 
   // Track if we've already handled the resume prompt for this session
   const [hasCheckedSavedData, setHasCheckedSavedData] = useState(false)
+  const [storedLeadId, setStoredLeadId] = useState<string | null>(null)
+  const [hasInitializedLeadId, setHasInitializedLeadId] = useState(false)
+
+  // Cache leadId in localStorage so user can just visit /apply later on same device
+  useEffect(() => {
+    if (typeof window === "undefined") return
+
+    if (leadId) {
+      window.localStorage.setItem(LEAD_ID_STORAGE_KEY, leadId)
+      setStoredLeadId(leadId)
+      setHasInitializedLeadId(true)
+      return
+    }
+
+    const existing = window.localStorage.getItem(LEAD_ID_STORAGE_KEY)
+    if (existing) {
+      setStoredLeadId(existing)
+      setHasInitializedLeadId(true)
+    } else {
+      setHasInitializedLeadId(true) // Mark as initialized even if no leadId found
+    }
+  }, [leadId])
+
+  // Track previous step to only update when step actually changes
+  const prevStepRef = useRef<number | null>(null)
+
+  // Sync current step to lead in DB (analytics/progress tracking only)
+  useEffect(() => {
+    // Wait for leadId to be initialized before trying to update
+    if (!hasInitializedLeadId) return
+    
+    // Don't update if we don't have a leadId
+    if (!storedLeadId && !leadId) return
+
+    const idToUse = leadId ?? storedLeadId
+    if (!idToUse) return
+
+    // Skip if this is the initial mount (prevStepRef is null)
+    // Only update when step actually changes
+    if (prevStepRef.current === null) {
+      prevStepRef.current = currentStep
+      return
+    }
+
+    // Only update if step has changed
+    if (prevStepRef.current === currentStep) return
+
+    prevStepRef.current = currentStep
+
+    // Fire-and-forget, no need to await
+    fetch("/api/leads/progress", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ leadId: idToUse, currentStep }),
+    })
+      .then(async (res) => {
+        if (!res.ok) {
+          const errorText = await res.text().catch(() => "Unknown error")
+          console.error("[Progress] Failed to update lead progress:", res.status, res.statusText, errorText)
+        } else {
+          console.log("[Progress] Successfully updated lead progress:", { leadId: idToUse, currentStep })
+        }
+      })
+      .catch((error) => {
+        console.error("[Progress] Error updating lead progress:", error)
+        // Swallow errors; progress tracking should not block the user
+      })
+  }, [currentStep, leadId, storedLeadId, hasInitializedLeadId])
+
+  // Prefill from hero lead form (name, email, phone) if available from server
+  useEffect(() => {
+    if (!leadContact) return
+
+    if (leadContact.name) {
+      methods.setValue("parents.guardian.firstName", leadContact.name, { shouldDirty: true })
+    }
+    if (leadContact.email) {
+      methods.setValue("parents.guardian.email", leadContact.email, { shouldDirty: true })
+    }
+    if (leadContact.phone) {
+      methods.setValue("parents.guardian.mobilePhone", leadContact.phone, { shouldDirty: true })
+    }
+  }, [leadContact, methods])
 
   // Check for saved data - this function can be called multiple times safely
   const checkForSavedData = useCallback(() => {

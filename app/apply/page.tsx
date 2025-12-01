@@ -3,9 +3,15 @@ import Link from "next/link"
 import ApplicationForm from "@/components/application/application-form"
 import { prisma } from "@/lib/prisma"
 
-export default async function ApplyPage() {
+type ApplyPageProps = {
+  searchParams: {
+    leadId?: string
+  }
+}
+
+export default async function ApplyPage({ searchParams }: ApplyPageProps) {
   try {
-    const [campuses, academicYears] = await Promise.all([
+    const [campuses, academicYears, lead] = await Promise.all([
       prisma.campus.findMany({
         where: { active: true },
         orderBy: { name: "asc" },
@@ -14,6 +20,11 @@ export default async function ApplyPage() {
         where: { active: true },
         orderBy: { year: "desc" },
       }),
+      searchParams.leadId
+        ? prisma.lead.findUnique({
+            where: { id: searchParams.leadId },
+          })
+        : Promise.resolve(null),
     ])
 
     return (
@@ -56,7 +67,20 @@ export default async function ApplyPage() {
               </p>
             </div>
 
-            <ApplicationForm campuses={campuses} academicYears={academicYears} />
+            <ApplicationForm
+              campuses={campuses}
+              academicYears={academicYears}
+              leadContact={
+                lead
+                  ? {
+                      name: lead.name,
+                      email: lead.email,
+                      phone: lead.phone,
+                    }
+                  : undefined
+              }
+              leadId={lead?.id}
+            />
           </div>
         </div>
       </div>
