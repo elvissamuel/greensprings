@@ -1,10 +1,7 @@
 import { z } from "zod"
 
-// Enums based on Prisma schema
-const ApplyingAsEnum = z.enum(["new_student", "returning_student", "transfer_student"])
-const GenderEnum = z.enum(["male", "female"])
-const LivesWithEnum = z.enum(["both_parents", "mother", "father", "guardian", "other"])
-const ParentTypeEnum = z.enum(["FATHER", "MOTHER", "GUARDIAN", "OTHER"])
+// String validations - Prisma schema uses String type, not enums
+// These are validated as strings with optional constraints
 
 // Student/Applicant schema
 const studentSchema = z.object({
@@ -18,7 +15,7 @@ const studentSchema = z.object({
     },
     { message: "Invalid date format" }
   ),
-  gender: GenderEnum,
+  gender: z.string().min(1, "Gender is required"),
   nationality: z.string().min(1, "Nationality is required").max(100),
   address: z.string().min(1, "Address is required").max(500),
   homeLanguage: z.string().min(1, "Home language is required").max(100),
@@ -30,13 +27,13 @@ const studentSchema = z.object({
   requireBus: z.boolean().default(false),
   religion: z.string().max(100).optional().or(z.literal("")),
   placeOfBirth: z.string().min(1, "Place of birth is required").max(100),
-  livesWith: LivesWithEnum,
+  livesWith: z.string().min(1, "This field is required"),
   livesWithOther: z.string().max(200).optional().or(z.literal("")),
 })
 
 // Parent schema
 const parentSchema = z.object({
-  type: ParentTypeEnum,
+  type: z.string().min(1, "Parent type is required"),
   detailsNotAvailable: z.boolean().default(false),
   title: z.string().max(50).optional().or(z.literal("")),
   firstName: z.string().max(100).optional().or(z.literal("")),
@@ -100,7 +97,7 @@ export const applicationFormSchema = z
   .object({
     campusId: z.string().min(1, "Campus is required"),
     academicYearId: z.string().min(1, "Academic year is required"),
-    applyingAs: ApplyingAsEnum,
+    applyingAs: z.string().min(1, "Applying as is required"),
     student: studentSchema,
     schools: z
       .array(schoolRecordSchema)
