@@ -1,11 +1,18 @@
 import Image from "next/image"
 import Link from "next/link"
 import ApplicationForm from "@/components/application/application-form"
+import { LeadIdRedirect } from "@/components/apply/lead-id-redirect"
 import { prisma } from "@/lib/prisma"
 
-export default async function ApplyPage() {
+type ApplyPageProps = {
+  searchParams: {
+    leadId?: string
+  }
+}
+
+export default async function ApplyPage({ searchParams }: ApplyPageProps) {
   try {
-    const [campuses, academicYears] = await Promise.all([
+    const [campuses, academicYears, lead] = await Promise.all([
       prisma.campus.findMany({
         where: { active: true },
         orderBy: { name: "asc" },
@@ -14,10 +21,18 @@ export default async function ApplyPage() {
         where: { active: true },
         orderBy: { year: "desc" },
       }),
+      searchParams.leadId
+        ? prisma.lead.findUnique({
+            where: { id: searchParams.leadId },
+          })
+        : Promise.resolve(null),
     ])
 
     return (
       <div className="min-h-screen bg-gradient-to-br from-maroon-50 via-gray-50 to-forest-50">
+        {/* Client-side redirect to add leadId from localStorage to URL */}
+        <LeadIdRedirect />
+
         {/* Header */}
         <header className="bg-white border-b border-maroon-100 sticky top-0 z-40">
           <div className="container mx-auto px-4 py-3">
@@ -56,7 +71,20 @@ export default async function ApplyPage() {
               </p>
             </div>
 
-            <ApplicationForm campuses={campuses} academicYears={academicYears} />
+            <ApplicationForm
+              campuses={campuses}
+              academicYears={academicYears}
+              leadContact={
+                lead
+                  ? {
+                      name: lead.name,
+                      email: lead.email,
+                      phone: lead.phone,
+                    }
+                  : undefined
+              }
+              leadId={lead?.id}
+            />
           </div>
         </div>
       </div>

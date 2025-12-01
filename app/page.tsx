@@ -1,5 +1,7 @@
 import Image from "next/image"
 import Link from "next/link"
+import { HeroLeadForm } from "@/components/hero-lead-form"
+import { ContinueApplicationBanner } from "@/components/continue-application-banner"
 
 export default function HomePage() {
   return (
@@ -9,6 +11,9 @@ export default function HomePage() {
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-gold-400/10 rounded-full blur-3xl" />
         <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-forest-400/10 rounded-full blur-3xl" />
       </div>
+
+      {/* Continue Application Banner */}
+      <ContinueApplicationBanner />
 
       {/* Header */}
       <header className="relative z-10 border-b border-white/10">
@@ -28,11 +33,12 @@ export default function HomePage() {
                 <p className="text-gold-400 text-xs">Est. 1985</p>
               </div>
             </div>
+            
             <Link
-              href="/apply"
+              href="https://greenspringsschool.com"
               className="bg-gold-500 hover:bg-gold-400 text-maroon-900 font-semibold px-5 py-2 rounded-full text-sm transition-all hover:shadow-lg hover:shadow-gold-500/25"
             >
-              Apply Now
+              Learn More
             </Link>
           </div>
         </div>
@@ -59,7 +65,7 @@ export default function HomePage() {
                 We nurture tomorrow&apos;s leaders with world-class education.
               </p>
 
-              <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
+              {/* <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
                 <Link
                   href="/apply"
                   className="inline-flex items-center justify-center gap-2 bg-gold-500 hover:bg-gold-400 text-maroon-900 font-bold px-8 py-4 rounded-xl text-lg transition-all hover:shadow-xl hover:shadow-gold-500/25 hover:-translate-y-0.5"
@@ -77,7 +83,7 @@ export default function HomePage() {
                 >
                   Learn More
                 </a>
-              </div>
+              </div> */}
 
               {/* Stats */}
               <div className="flex flex-wrap justify-center lg:justify-start gap-8 mt-12 pt-8 border-t border-white/10">
@@ -96,24 +102,9 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Right Content - Logo/Image */}
+            {/* Right Content - Lead Capture Form */}
             <div className="flex-1 flex justify-center">
-              <div className="relative">
-                <div className="absolute inset-0 bg-gold-400/20 rounded-full blur-3xl scale-75" />
-                <div className="relative bg-white/10 backdrop-blur-sm rounded-3xl p-8 border border-white/20">
-                  <Image
-                    src="/GSL-Logo.png"
-                    alt="Greensprings School Logo"
-                    width={280}
-                    height={280}
-                    className="object-contain"
-                    priority
-                  />
-                  <p className="text-center text-gold-300 italic mt-4 text-lg font-medium">
-                    &quot;In Love Serve One Another&quot;
-                  </p>
-                </div>
-              </div>
+              <HeroLeadForm />
             </div>
           </div>
         </div>
