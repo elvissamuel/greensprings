@@ -1,5 +1,6 @@
 import { prisma } from "@/lib/prisma"
 import { AdminHeader } from "@/components/admin/admin-header"
+import { DownloadLeadsButton } from "@/components/admin/download-leads-button"
 
 export const revalidate = 0
 export const dynamic = "force-dynamic"
@@ -44,7 +45,7 @@ export default async function AdminLeadsPage() {
         <div className="max-w-7xl mx-auto">
           {/* Page Header */}
           <div className="mb-8">
-            <div className="flex items-center gap-4 mb-4">
+            <div className="flex items-center justify-between mb-4">
               <a
                 href="/admin/applications"
                 className="inline-flex items-center gap-2 text-sm font-medium text-gray-600 hover:text-gray-900 transition-colors"
@@ -64,6 +65,7 @@ export default async function AdminLeadsPage() {
                 </svg>
                 Back to Applications
               </a>
+              <DownloadLeadsButton leads={leads} stepLabels={STEP_LABELS} />
             </div>
             <h1 className="text-2xl font-bold text-gray-900">Leads</h1>
             <p className="text-gray-600 mt-1">
@@ -102,7 +104,7 @@ export default async function AdminLeadsPage() {
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Lead ID
+                      S/N
                     </th>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                       Name
@@ -122,7 +124,7 @@ export default async function AdminLeadsPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {leads.map((lead) => {
+                  {leads.map((lead, index) => {
                     const stepLabel =
                       lead.currentStep >= 0 && lead.currentStep < STEP_LABELS.length
                         ? STEP_LABELS[lead.currentStep]
@@ -130,10 +132,8 @@ export default async function AdminLeadsPage() {
 
                     return (
                       <tr key={lead.id} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="text-sm font-mono text-gray-900 bg-gray-100 px-2 py-1 rounded">
-                            {lead.id.slice(0, 8)}
-                          </span>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                          {index + 1}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                           {lead.name}

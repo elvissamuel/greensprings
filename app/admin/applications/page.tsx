@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma"
 import { formatCurrency } from "@/lib/utils"
 import { AdminHeader } from "@/components/admin/admin-header"
 import { ApplicationActions } from "@/components/admin/application-actions"
+import { DownloadApplicationsButton } from "@/components/admin/download-applications-button"
 import { Prisma } from "@prisma/client"
 
 // Disable caching for this page to ensure fresh data
@@ -79,6 +80,7 @@ export default async function AdminApplicationsPage() {
               )}
             </div>
             <div className="flex items-center gap-3">
+              <DownloadApplicationsButton applications={applications} />
               <a
                 href="/admin/leads"
                 className="inline-flex items-center gap-2 rounded-lg border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50"
@@ -118,8 +120,11 @@ export default async function AdminApplicationsPage() {
                 <thead className="bg-gray-50 border-b border-gray-200">
                   <tr>
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
-                      Application ID
+                      S/N
                     </th>
+                    {/* <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
+                      Application ID
+                    </th> */}
                     <th className="px-6 py-3 text-left text-xs font-medium text-gray-700 uppercase tracking-wider">
                       Student Name
                     </th>
@@ -144,13 +149,16 @@ export default async function AdminApplicationsPage() {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {applications.map((app) => (
+                  {applications.map((app, index) => (
                     <tr key={app.id} className="hover:bg-gray-50 transition-colors">
-                      <td className="px-6 py-4 whitespace-nowrap">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                        {index + 1}
+                      </td>
+                      {/* <td className="px-6 py-4 whitespace-nowrap">
                         <span className="text-sm font-mono text-gray-900 bg-gray-100 px-2 py-1 rounded">
                           {app.id.slice(0, 8)}
                         </span>
-                      </td>
+                      </td> */}
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div>
                           <p className="text-sm font-medium text-gray-900">

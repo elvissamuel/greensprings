@@ -17,11 +17,19 @@ const REQUIRED_DOCUMENTS = [
   { type: "PSYCHOLOGICAL_ASSESSMENT", label: "Psychological Assessment (if applicable)", required: false },
 ]
 
-const MAX_FILE_SIZE = 8 * 1024 * 1024 // 8MB
+const MAX_FILE_SIZE = 8 * 1024 * 1024 // 8MB per file
+const MAX_TOTAL_SIZE = 4 * 1024 * 1024 // 4MB total for all files
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "application/pdf"]
 
 export function DocumentUploadStep({ documents, setDocuments }: Props) {
   const [uploadStatus, setUploadStatus] = useState<Record<string, string>>({})
+  
+  // Calculate total size of all uploaded files
+  const totalSize = Object.values(documents).reduce((sum, file) => sum + file.size, 0)
+  const totalSizeMB = (totalSize / (1024 * 1024)).toFixed(2)
+  const maxSizeMB = (MAX_TOTAL_SIZE / (1024 * 1024)).toFixed(0)
+  const isNearLimit = totalSize > MAX_TOTAL_SIZE * 0.8 // 80% of limit
+  const exceedsLimit = totalSize > MAX_TOTAL_SIZE
 
   const handleFileChange = (type: string, file: File | null) => {
     if (!file) {
@@ -63,8 +71,22 @@ export function DocumentUploadStep({ documents, setDocuments }: Props) {
         <ul className="text-sm text-blue-800 space-y-1">
           <li>• Accepted formats: JPEG, PNG, PDF</li>
           <li>• Maximum file size: 8MB per file</li>
+          <li>• <strong className="text-blue-900">Total size limit: {maxSizeMB}MB for all files combined</strong></li>
           <li>• All required documents must be uploaded before submission</li>
         </ul>
+        {Object.keys(documents).length > 0 && (
+          <div className={`mt-3 pt-3 border-t border-blue-200 ${exceedsLimit ? 'text-red-700' : isNearLimit ? 'text-amber-700' : 'text-blue-900'}`}>
+            <p className="text-sm font-medium">
+              Total size: {totalSizeMB}MB / {maxSizeMB}MB
+              {exceedsLimit && (
+                <span className="ml-2 text-red-600 font-bold">⚠️ Exceeds limit!</span>
+              )}
+              {isNearLimit && !exceedsLimit && (
+                <span className="ml-2 text-amber-600">⚠️ Near limit</span>
+              )}
+            </p>
+          </div>
+        )}
       </div>
 
       <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">

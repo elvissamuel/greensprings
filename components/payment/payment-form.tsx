@@ -109,16 +109,16 @@ export function PaymentForm({ application }: Props) {
             </svg>
             Send Payment Confirmation To
           </h3>
-          <div className="space-y-2">
+          <div className="space-y-2 break-words">
             <a 
               href="mailto:finance.anthony@greenspringsschool.com" 
-              className="block text-maroon-700 hover:text-maroon-900 font-medium"
+              className="block text-maroon-700 hover:text-maroon-900 font-medium break-all sm:break-words"
             >
               finance.anthony@greenspringsschool.com
             </a>
             <a 
               href="mailto:admission.anthony@greenspringsschool.com" 
-              className="block text-maroon-700 hover:text-maroon-900 font-medium"
+              className="block text-maroon-700 hover:text-maroon-900 font-medium break-all sm:break-words"
             >
               admission.anthony@greenspringsschool.com
             </a>
