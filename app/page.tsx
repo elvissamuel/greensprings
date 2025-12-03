@@ -110,6 +110,24 @@ export default function HomePage() {
         </div>
       </section>
 
+      {/* Important Notice/Disclaimer */}
+      <section className="relative z-10 py-8 px-4 bg-gradient-to-r from-gold-500/10 via-gold-400/10 to-gold-500/10 border-y border-gold-400/20">
+        <div className="container mx-auto max-w-4xl">
+          <div className="flex items-start gap-4 bg-white/95 backdrop-blur-sm rounded-xl p-6 shadow-lg border border-gold-200">
+            <div className="flex-shrink-0 mt-0.5">
+              <svg className="w-6 h-6 text-gold-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            </div>
+            <div className="flex-1">
+              <p className="text-maroon-900 font-semibold text-base leading-relaxed">
+                Due to high demand, applications will be processed on a first come, first served basis. Registration will close once we reach full capacity. Your payment confirms your spot.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Features Section */}
       <section className="relative z-10 py-20 bg-white">
         <div className="container mx-auto px-4 max-w-6xl">
